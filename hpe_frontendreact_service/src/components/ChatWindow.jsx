@@ -18,46 +18,30 @@ function ChatWindow() {
 
   useEffect(() => {
 
-    connectSocket();
+  const handleConnect = () => {
+    console.log("WebSocket connected:", socket.id);
+    setConnected(true);
+  };
 
-    socket.on("connect", () => {
+  const handleDisconnect = () => {
+    console.log("WebSocket disconnected");
+    setConnected(false);
+  };
 
-      console.log("WebSocket connected:", socket.id);
+  socket.on("connect", handleConnect);
+  socket.on("disconnect", handleDisconnect);
 
-      setConnected(true);
-    });
+  connectSocket();
 
-    socket.on("disconnect", () => {
+  return () => {
 
-      console.log("WebSocket disconnected");
+    socket.off("connect", handleConnect);
+    socket.off("disconnect", handleDisconnect);
 
-      setConnected(false);
-    });
+    disconnectSocket();
+  };
 
-    socket.on("webOut", (message) => {
-
-      console.log("Received webOut:", message);
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          sender: "bot",
-          text: message.text || message
-        }
-      ]);
-
-    });
-
-    return () => {
-
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("webOut");
-
-      disconnectSocket();
-    };
-
-  }, []);
+}, []);
 
   const handleSend = (text) => {
 
