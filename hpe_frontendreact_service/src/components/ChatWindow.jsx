@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+// import {randomUUID} from "crypto"
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 
@@ -15,38 +15,78 @@ function ChatWindow() {
   const [messages, setMessages] = useState([]);
 
   const [connected, setConnected] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
 
   useEffect(() => {
 
-  const handleConnect = () => {
-    console.log("WebSocket connected:", socket.id);
-    setConnected(true);
-  };
+    const handleConversationStarted = (data) => {
 
-  const handleDisconnect = () => {
-    console.log("WebSocket disconnected");
-    setConnected(false);
-  };
+      console.log(
+        "Conversation started:",
+        data.conversationId
+      );
 
-  socket.on("connect", handleConnect);
-  socket.on("disconnect", handleDisconnect);
+      setConversationId(data.conversationId);
+    };
 
-  connectSocket();
+    const handleConnect = () => {
+      console.log("WebSocket connected:", socket.id);
+      setConnected(true);
+    };
 
-  return () => {
+    const handleDisconnect = () => {
+      console.log("WebSocket disconnected");
+      setConnected(false);
+    };
 
-    socket.off("connect", handleConnect);
-    socket.off("disconnect", handleDisconnect);
+    const handleWebOut = (message) => {
 
-    disconnectSocket();
-  };
+      console.log(
+        "Received webOut:",
+        message
+      );
 
-}, []);
+      setMessages((previous) => [
+        ...previous,
+        {
+          sender: "bot",
+          text: message.text || message
+        }
+      ]);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("webOut", handleWebOut);
+    socket.on("conversationStarted", handleConversationStarted);
+
+    connectSocket();
+
+
+    return () => {
+
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("webOut", handleWebOut);
+      socket.off("conversationStarted", handleConversationStarted);
+
+      disconnectSocket();
+    };
+
+  }, []);
 
   const handleSend = (text) => {
 
+    if (!conversationId) {
+      console.warn("Cannot send message: conversation not initialized");
+      return;
+    }
+
     const message = {
-      text: text
+      messageId: crypto.randomUUID(),
+      type: "user_message",
+      text: text,
+      conversationId: conversationId
     };
 
     setMessages((previous) => [
