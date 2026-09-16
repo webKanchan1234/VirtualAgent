@@ -1,0 +1,17 @@
+{
+  "name": "conversation-provider",
+  "version": "1.0.0",
+  "description": "VirtualAgent conversation provider service",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

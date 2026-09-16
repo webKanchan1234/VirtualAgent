@@ -1,32 +1,61 @@
-const redisClient =require("../config/redis")
+const redisClient = require("../config/redis");
 
 const SESSION_PREFIX = "session:";
+
 const SESSION_TTL_SECONDS = 30 * 60;
 
-const getKey=(conversationId)=>{
-    return `${SESSION_PREFIX}${conversationId}`;
-}
+
+const getKey = (conversationId) => {
+  return `${SESSION_PREFIX}${conversationId}`;
+};
 
 
-const save=async(session)=>{
-    const key=getKey(session.conversationId)
+// --------------------------------------------------
+// Save session
+// --------------------------------------------------
 
-    await redisClient.set(key,JSON.stringify(session),{EX:SESSION_TTL_SECONDS})
+const save = async (session) => {
 
-    return session
-}
+  const key =
+    getKey(session.conversationId);
 
-const getByConversationId=(conversationId)=>{
-
-    const key=getKey(conversationId)
-    const data=redisClient.get(key)
-
-    if(!data){
-        return null
+  await redisClient.set(
+    key,
+    JSON.stringify(session),
+    {
+      EX: SESSION_TTL_SECONDS
     }
+  );
 
-    return JSON.parse(data)
-}
+  return session;
+};
+
+
+// --------------------------------------------------
+// Get session
+// --------------------------------------------------
+
+const getByConversationId = async (
+  conversationId
+) => {
+
+  const key =
+    getKey(conversationId);
+
+  const data =
+    await redisClient.get(key);
+
+  if (!data) {
+    return null;
+  }
+
+  return JSON.parse(data);
+};
+
+
+// --------------------------------------------------
+// Refresh session TTL
+// --------------------------------------------------
 
 const refresh = async (
   conversationId
@@ -42,21 +71,24 @@ const refresh = async (
 };
 
 
-const deleteByConversationId=async(conversationId)=>{
+// --------------------------------------------------
+// Delete session
+// --------------------------------------------------
 
-    const key=getKey(conversationId)
-    await redisClient.del(key)
+const deleteByConversationId = async (
+  conversationId
+) => {
 
-    if(!data){
-        return null
-    }
-    return JSON.parse(data)
-}
+  const key =
+    getKey(conversationId);
+
+  await redisClient.del(key);
+};
 
 
-module.exports={
-    save,
-    getByConversationId,
-    refresh,
-    deleteByConversationId
-}
+module.exports = {
+  save,
+  getByConversationId,
+  refresh,
+  deleteByConversationId
+};

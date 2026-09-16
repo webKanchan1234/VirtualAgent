@@ -12,6 +12,9 @@ const {
   refreshSession,
   endSession
 } = require("../clients/session-client");
+const {
+  processMessage
+} = require("../clients/core-choreographer-client");
 
 
 const registerSocketHandlers = (io) => {
@@ -223,29 +226,14 @@ const registerSocketHandlers = (io) => {
         }
 
 
-        // ----------------------------------------------
-        // Create bot response
-        // ----------------------------------------------
+        // -----------------------------------------------
+        // Send message to Core Choreographer
+        // -----------------------------------------------
 
-        const response = {
-
-          messageId:
-            randomUUID(),
-
-          responseToMessageId:
-            message.messageId,
-
-          type:
-            MESSAGE_TYPES.BOT_MESSAGE,
-
-          text:
-            `You send ${message.text}`,
-
-          conversationId,
-
-          timestamp:
-            new Date().toISOString()
-        };
+        const response =
+          await processMessage(
+            message
+          );
 
 
         console.log(
@@ -280,7 +268,7 @@ const registerSocketHandlers = (io) => {
               "error",
 
             text:
-              "Unable to verify conversation",
+              "Unable to process your message",
 
             conversationId,
 
