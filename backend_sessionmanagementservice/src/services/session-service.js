@@ -42,7 +42,7 @@ const endSession=async(conversationId)=>{
         return null
     }
 
-    sessions.status="END"
+    session.status="END"
     session.endedAt =
     new Date().toISOString();
 
